@@ -1,0 +1,54 @@
+Summary
+The paper proposes an integrated pipeline for lentil yield analysis across five environments in Bangladesh, combining manifold learning (UMAP/t-SNE) for visualization, machine learning regressors for yield prediction (with Ridge Regression reported as best), SHAP for post hoc explanation of feature contributions, and AMMI/GGE biplots for genotype stability assessment. The dataset includes 10 genotypes evaluated across 5 locations with three replications (n=150), and the study reports a test R2 ≈ 0.81 and nested cross-validation R2 ≈ 0.77 for the best model, with DF×BP interaction and TSW highlighted as important predictors and G3/G4/G7 reported as top stable genotypes.
+
+Strengths
+Technical novelty and innovation
+Integration of manifold learning visualizations with predictive modeling, explainability, and classical stability analyses in a single workflow is a useful framing for multi-environment trials.
+Feature engineering reflects agronomic hypotheses (e.g., DF×BP, PH×DM, squared terms for nonlinearity).
+Experimental rigor and validation
+The manuscript attempts nested cross-validation to quantify generalization and uses multiple algorithms spanning linear models, kernel methods, trees/ensembles, and SVR.
+Standard practices to reduce leakage in preprocessing are acknowledged (scaling fit only on training data).
+Clarity of presentation
+The methodology is itemized with mathematical formulations for models, objective functions, and evaluation metrics, which aids reproducibility in principle.
+The paper describes the embedding objectives (UMAP/t-SNE) and provides narrative interpretations of observed structure.
+Significance of contributions
+Yield prediction and stability analysis under drought-prone multi-environment conditions are important, high-impact problems for breeding and agronomic decision-making.
+Making connections between data-driven models and classical stability (AMMI/GGE) could be valuable for practitioners if robustly demonstrated.
+Weaknesses
+Technical limitations or concerns
+Critical inconsistencies: conflicting RMSE values (34.28 vs 183.77 kg/ha), inconsistent genotype identifiers (e.g., top stable genotypes G3/G4/G7 vs earlier listed G1/G17/G21/G39/G41/G43/G49/G63/G71/G73), and contradictory SHAP statements (PH×DM “top SHAP” vs later DF×BP and TSW).
+SHAP methodology appears misapplied: TreeExplainer is stated, but the best model is Ridge (a linear model). LinearExplainer or KernelExplainer would be appropriate; TreeExplainer on a non-tree model is not methodologically sound.
+Embedding interpretation risks circularity and overinterpretation. Location and genotype are one-hot encoded and included in the embedding, so the location-wise separation in UMAP may be driven by the categorical identity rather than emergent structure. The reported “quantitative validation” compares means of visually selected clusters without a pre-specified clustering method, inviting selection bias.
+Small dataset (n=150) with a relatively high-dimensional feature space (including 15 one-hot variables and several engineered terms) raises high risk of overfitting, especially with random splits that do not respect grouping by location/genotype/season.
+Experimental gaps or methodological issues
+No group-aware cross-validation for realistic generalization scenarios (e.g., leave-one-environment-out, leave-one-genotype-out, or year-out). With one-hot-encoded location/genotype, random splits can leak group identity into the test fold, inflating R2.
+Missing baseline comparisons against standard mixed-model approaches for METs (e.g., GBLUP/FA mixed models, RKHS/GP with G×E kernels); these are now mainstream baselines for multi-environment prediction and stability and should be included.
+Hyperparameter tuning spaces are narrow and under-specified; no ablations quantify the contribution of engineered features or categorical encodings.
+Outlier removal via IQR is described but reports “retained 150 from 150,” implying a no-op; missingness extent is not quantified.
+Clarity or presentation issues
+Colloquial writing and occasionally informal tone undermine scientific clarity; several figures are described but not shown, and some climate/ET numbers are implausible (nighttime ET reported far greater than daytime).
+Weather summaries (July 2024–June 2025) do not align with trial years (2022–2024), creating confusion about environmental covariates used.
+Statistical claims (e.g., p<0.001 for embedding-derived clusters) lack details about test procedures and pre-specified hypotheses.
+Missing related work or comparisons
+Absent comparisons to design-aware and mixed-model MET frameworks (e.g., factor-analytic LMMs, GBLUP/RKHS in ASReml-R) and GP-based G×E models. Recent work demonstrates efficient kernel-based REML and GP kernels for G×E with strong baselines.
+SHAP reliability under poor generalization and correlated features is not discussed; recent results warn that SHAP can mislead without robust, temporally/group-aware validation. Causal SHAP or correlation-aware attributions could mitigate misattribution in collinear agronomic traits.
+Detailed Comments
+Technical soundness evaluation
+The central premise—marrying visualization, prediction, explanation, and stability—is attractive, but the current execution has methodological flaws that threaten validity. In particular:
+Using TreeExplainer for a linear model is incorrect; please use LinearExplainer (or KernelExplainer) and clarify the background dataset.
+Random train/test splits with one-hot location and genotype likely produce optimistic estimates by learning group indicators; proper evaluation requires group-aware splits (e.g., leave-location-out, leave-genotype-out, leave-year-out) aligned with intended deployment scenarios.
+Embedding interpretations must avoid circular logic. If location/genotype indicators are in the embedding, strong location clustering is expected. For testing agronomic structure, remove identity columns, use only numeric traits (or explicitly use supervised UMAP for a prediction-oriented embedding as a sensitivity analysis) and quantify cluster separation with objective methods (e.g., silhouette, ARI).
+The “quantitative validation” of embedding clusters should be formalized: define cluster labels algorithmically (e.g., HDBSCAN), pre-register comparisons, and correct for multiple comparisons.
+Experimental evaluation assessment
+Report complete performance tables for all algorithms across multiple seeds/folds, with confidence intervals. Show group-aware CV results (LOEO/LOGO/LOYO) to assess extrapolation to new environments/genotypes/years.
+Include standard MET baselines: (i) linear mixed models with genotype and environment random effects; (ii) factor-analytic mixed models (FAk) for G×E; (iii) RKHS/GP models with environment and genotype kernels. Recent ASReml-R RKHS with REML-estimated kernel bandwidths and heterogeneous variances is an efficient, strong baseline; GP-based G×E kernels are a principled alternative. These provide rigorous context for Ridge and tree ensembles.
+Provide an ablation study: impact of engineered features; with vs without one-hot environment/genotype; with vs without BY/TSW; standardized vs raw scales.
+Clarify and correct all metric inconsistencies (e.g., RMSE 34.28 vs 183.77 kg/ha); include MAE/MAPE distributions and error analysis by environment and genotype.
+Comparison with related work (using the summaries provided)
+Kernel-based multi-environment prediction via ASReml-R (frequentist RKHS with REML-estimated bandwidths, heterogeneous variances) shows state-of-the-art performance and speed. It should be cited and used as a baseline to benchmark the Ridge model and ensembles.
+GP frameworks for G×E with principled kernel combinations on genetic and environmental spaces provide interpretable covariance structures and probabilistic predictions; their linkage to LMMs is well-documented and relevant for your setting.
+Design-aware inference (AgroDesign) emphasizes deriving the valid linear/mixed model from the experimental randomization and unit hierarchy. Given your replicated MET, an explicit mixed-model analysis for BLUPs and stability (and coherent AMMI/GGE) would increase rigor and coherence.
+On explainability, recent work documents that SHAP attributions can look plausible even when models do not generalize temporally or across groups; group-aware validation is a prerequisite for trusting attributions. Causal SHAP or correlation-aware methods help mitigate misattribution under feature collinearity—highly relevant here given strong correlations among agronomic traits and engineered squares/interactions.
+Theoretical perspectives on UMAP/t-SNE and supervised variants point to opportunities and limitations; if embeddings are to be used for prediction-related insights, compare against supervised UMAP (for regression) and simpler baselines (PCA/KernelPCA) and discuss the limits identified for regression tasks.
+Discussion of broader impact and significance
+If corrected, the integrated workflow could aid breeders by connecting predictive models with interpretable drivers and classical stability metrics. However, in its current form the risk of information leakage and overinterpretation of embeddings undermines reliability. Improving design-aware analysis, validation, and explainability would materially increase the value to the breeding and agronomy community.

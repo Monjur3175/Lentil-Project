@@ -1,0 +1,31 @@
+
+📊 DATASET SUMMARY:
+• Total Samples: 127 (after outlier removal)
+• Features: 31 (after one-hot encoding)
+• Target Variable: Grain Yield (GY)
+• Locations: 5 | Genotypes: 10
+
+🤖 BEST MODEL: Ridge
+• Test R²: 0.8072
+• Test RMSE: 183.77 kg/ha
+• Nested CV R²: 0.7289 ± 0.0628
+
+🌟 TOP 3 RECOMMENDED GENOTYPES:
+   8. G63: Yield=1679.2, ASV=187.7, Rank=2.0
+   9. G71: Yield=1652.4, ASV=171.3, Rank=2.0
+   7. G49: Yield=1682.3, ASV=342.7, Rank=2.5
+
+🔑 KEY DRIVERS OF YIELD (SHAP):
+   • DF_BP_Interaction: 140.60
+   • TSW: 102.35
+   • BY: 100.17
+   • PP: 89.25
+   • PH_DM_Interaction: 80.34
+
+📍 BEST PERFORMING LOCATION: Shyampur (1709.3 kg/ha)
+
+💡 RECOMMENDATIONS:
+• Prioritize genotypes G63, G71, G49 for stable high yields
+• Focus breeding on DF_BP_Interaction, TSW, BY (top SHAP features)
+• Shyampur shows highest yield potential
+• Overfitting gap: 0.010 (good generalization if <0.1)
